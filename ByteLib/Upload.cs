@@ -1,19 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using xNet;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
 
 namespace ByteLib
 {
     public class Upload
     {
         public static List<string> combolist;
-        public static List<string> proxylist;
-        public static int threads = 50;
-        public static string proxytype;
-
         public List<string> Combo()
         {
             for (; ; )
@@ -51,8 +48,8 @@ namespace ByteLib
                     };
                     if (fileDialog.ShowDialog() == DialogResult.OK)
                     {
-                        proxylist = ((IEnumerable<string>)File.ReadAllLines(fileDialog.FileName)).ToList<string>();
-                        return proxylist;
+                        List<string> ProxyList = ((IEnumerable<string>)File.ReadAllLines(fileDialog.FileName)).ToList<string>();
+                        return ProxyList;
                     }
                 }
                 catch (Exception ex)
@@ -65,47 +62,28 @@ namespace ByteLib
 
         public int Threads()
         {
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write(" Threads?: ");
             Console.ForegroundColor = ConsoleColor.White;
             try
             {
-                threads = int.Parse(Console.ReadLine());
+                Variables.Threads = int.Parse(Console.ReadLine());
             }            
             catch
             {
-                threads = 50;
+                Variables.Threads = 50;
             }            
-            return threads;
+            return Variables.Threads;
         }
 
 
-        public ProxyType proxyType()
+        public string proxyType()
         {
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.Write(" Proxy Type?: ");
             Console.ForegroundColor = ConsoleColor.White;
-            string proxyType = Console.ReadLine().ToLower();
-            if (proxyType.Contains("http"))
-            {
-                return ProxyType.Http;
-            }
-            else if (proxyType.Contains("socks4"))
-            {
-                return ProxyType.Socks4;
-            }
-            else if (proxyType.Contains("socks5"))
-            {
-                return ProxyType.Socks5;
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(" You entered the wrong type of proxy!");
-                Console.ReadLine();
-                Environment.Exit(0);
-            }
-            return ProxyType.Http;
+            string proxyType = Console.ReadLine();
+            return proxyType;
         }
     }
 }

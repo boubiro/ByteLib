@@ -1,4 +1,4 @@
-# ByteLib v1.0.0
+# ByteLib v1.0.1
 
 Library to easily create checkers in C#!
 

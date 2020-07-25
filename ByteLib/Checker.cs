@@ -1,4 +1,3 @@
-﻿using CheckerLib;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,40 +18,73 @@ namespace ByteLib
 {
     public class Checker
     {
-        public static string nameChecker { get; set; }
-        public static string Coder { get; set; }
-        public static string versionChecker { get; set; }
 
         public static Stopwatch st = new Stopwatch();
-
-        public static void Initialize(string name, string version, string coder)
-        {                        
-            Console.Title = name + " v" + version + " | Made by " + coder + " with ByteLib v1.0.0";
-            nameChecker = name;
-            versionChecker = version;
-            Coder = coder;
-        }
-
-        public void startTitle(int progress, int combolenght, int Hits, int Fails, int Retries)
+        public static Upload upload = new Upload();
+        public static Variables var = new Variables();
+        public static void Init()
         {
-            Variables.Progress = progress;
-            Variables.Hits = Hits;
-            Variables.ComboLenght = combolenght;
-            Variables.Fails = Fails;
-            Variables.Retries = Retries;
-            goTitle();
+            Console.Title = configuration.nameChecker + " " + configuration.versionChecker + " | Made by " + configuration.Coder + " with ByteLib v1.0.1";
+            Variables.ComboList = upload.Combo();
+            Variables.ComboLenght = Variables.ComboList.Count();
+            if (configuration.Useproxy)
+            {
+                var.ProxyList = upload.Proxys();
+
+                string type = upload.proxyType().ToLower();     
+                switch (type)
+                {
+                    case "http":
+                        var.proxyType = ProxyType.Http;
+                        break;
+
+                    case "socks4":
+                        var.proxyType = ProxyType.Socks4;
+                        break;
+
+                    case "socks4a":
+                        var.proxyType = ProxyType.Socks4a;
+                        break;
+
+                    case "socks5":
+                        var.proxyType = ProxyType.Socks5;
+                        break;
+
+                    case null:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(" You entered the wrong type of proxy!");
+                        Console.ReadLine();
+                        Environment.Exit(0);
+                        break;
+
+                }
+
+
+            }
+
+            Variables.Threads = upload.Threads();
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("\n Running (" + Variables.Threads + "/" + Variables.Threads + ") Threads.\n");
+            Task.Factory.StartNew(delegate ()
+            {
+                for (; ; )
+                {
+                    goTitle();
+                }
+            });
         }
 
-        public void goTitle()
+        public static void goTitle()
         {
          Checker.CPM = Checker.Increment_CPM;
          Checker.Increment_CPM = 0;
-         Checker.SetTitle(nameChecker, Coder, versionChecker, Variables.Progress, Variables.ComboLenght, Variables.Hits, Variables.Fails, Variables.Retries, GetElapsed());
+         Console.Title = configuration.nameChecker + " " + configuration.versionChecker + " by " + configuration.Coder + " | (" + Variables.Progress + "/" + Variables.ComboLenght + ") | Hits: " + Variables.Hits + " - Fails: " + Variables.Fails + " - Retries: " + Variables.Retries + " - CPM: " + CPM * 60 + " - Elapsed: " + GetElapsed() + " | Powered with ByteLib v1.0.1";
          Thread.Sleep(1000);
         }
 
-        public static string post(string url, ProxyType proxyType, bool Post = false, bool useProxy = true, string contentType = null,
-    string dataPost = null, string userAgent = null)
+
+        public static string post(string url, ProxyType proxyType, bool Post = false, string contentType = null, string dataPost = null,
+            string userAgent = null)
         {
             while (true)
             {
@@ -60,9 +92,9 @@ namespace ByteLib
                 {
                     using (var httpRequest = new HttpRequest())
                     {
-                        if (useProxy)
+                        if (configuration.Useproxy)
                         {
-                            string Proxy = Upload.proxylist[new Random().Next(Upload.proxylist.Count)];
+                            string Proxy = var.ProxyList[new Random().Next(var.ProxyList.Count)];
                             var array = Proxy.Split(':');
                             httpRequest.Proxy = ProxyClient.Parse(proxyType, array[0] + ":" + array[1]);
                             if (array.Length == 4)
@@ -90,7 +122,7 @@ namespace ByteLib
 
         }
 
-        public static string Get(string url, ProxyType proxyType, bool useProxy = true, bool? Headers = null, string header = null, string value = null
+        public static string Get(string url, ProxyType proxyType, bool? Headers = null, string header = null, string value = null
             , string userAgent = null)
         {
             while (true)
@@ -99,9 +131,9 @@ namespace ByteLib
                 {
                     using (var httpRequest = new HttpRequest())
                     {
-                        if (useProxy)
+                        if (configuration.Useproxy)
                         {
-                            string Proxy = Upload.proxylist[new Random().Next(Upload.proxylist.Count)];
+                            string Proxy = var.ProxyList[new Random().Next(var.ProxyList.Count)];
                             var array = Proxy.Split(':');
                             httpRequest.Proxy = ProxyClient.Parse(proxyType, array[0] + ":" + array[1]);
                             if (array.Length == 4)
@@ -133,16 +165,11 @@ namespace ByteLib
         }
 
 
-        public static void SetTitle(string nameChecker, string coder, string version, int progress, int combolenght, int Hits, int fails, int retries, string elapsed)
-        {
-            Console.Title = nameChecker + " v" + version + " by " + coder + " | (" + progress + "/" + combolenght + ") | Hits: " + Hits + " - Fails: " + fails + " - Retries: " + retries + " - CPM: " + CPM * 60 + " - Elapsed: " + elapsed + " | Powered with ByteLib v1.0.0";
-        }
-
         public static void Start(MethodInvoker method)
         {
             st.Start();
 
-            for (int i = 1; i <= Upload.threads; i++)
+            for (int i = 1; i <= Variables.Threads; i++)
             {
                 new Thread(new ThreadStart(method)).Start();
             }

